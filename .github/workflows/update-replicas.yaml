@@ -1,0 +1,29 @@
+name: Update App replicas
+
+on:
+  workflow_call:
+    inputs:
+      app_name:
+        required: true
+        type: string
+      replicas:
+        required: true
+        type: number
+
+jobs:
+  update-replicas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: true
+      - name: Set replica count
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -i ".spec.replicas = ${{ inputs.replicas }}"" "${{ inputs.app_name }}/${{ inputs.app_name }}-deployment.yaml"
+      - name: Add & Commit
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          push: true
+          default_author: github_actions
+          message: Updated replica count for ${{ inputs.app_name }} to ${{ inputs.replicas }}
